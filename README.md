@@ -17,9 +17,9 @@ A simple demonstration of Ethereum Crawler Application using [Etherscan API](htt
 
 1. Create an account in the etherscan and create an api-key token.
 2. Clone the repository.
-3. Run **`npm install`** to install all the dependencies.
-4. Create an **`.env`** file in the **`src`** folder and copy paste the **`.env.temp`** content.
-5. Replace the **`"ETHERSCAN API KEY"`** text with your api key.
+3. Run **`npm ci`** to install all the dependencies.
+4. Create an **`.env`** file in the **`src`** folder and copy paste the **`.env.template`** content.
+5. Replace the **`REACT_APP_ETHERSCAN_API_KEY`** text with your api key.
 6. Run **`npm start`** to start the application on **`localhost:3000`**.
 
 ## Additional Info

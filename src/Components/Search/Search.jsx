@@ -5,6 +5,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 
 // import Web3 from 'web3';
 import axios from 'axios';
@@ -12,6 +14,10 @@ import axios from 'axios';
 const apiKey = process.env.REACT_APP_ETHERSCAN_API_KEY;
 const endpoint = `https://api.etherscan.io/api`;
 
+
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 /*
     Register an account on Infura with upgrade Archive Node
@@ -31,7 +37,9 @@ function AppSearch(props) {
     const [address, setAddress] = useState('');
     const [startBlock, setStartBlock] = useState('');
     const [endBlock, setEndBlock] = useState('');
-
+    const [buttonDisabled, setButtonDisabled] = useState(false);
+    const [noDataOpen, setNoDataOpen] = React.useState(false);
+    const [missOpen, setMissOpen] = React.useState(false);
     const [blockNumbers, setBlockNumbers] = useState([]);
 
     useEffect(() => {
@@ -44,6 +52,11 @@ function AppSearch(props) {
     }, [props.page]);
 
     const handleSearch = () => {
+        if(address === '' || startBlock === '') {
+            setMissOpen(true);
+            return;
+        }
+        setButtonDisabled(true);
         setBlockNumbers([]);
         onSearchAddress([]);
     }
@@ -55,11 +68,14 @@ function AppSearch(props) {
             `${address}&sort=asc&startblock=${blockNo.slice(-1)[0] || startBlock}` +
             `${endBlock !== '' ? '&endblock=' + endBlock : ''}` +
             `&page=1&offset=100&apikey=${apiKey}`
-        );
+        ).catch(() => setButtonDisabled(false));
 
-        if (!response.data) {
+        setButtonDisabled(false);
+
+        if (!Array.isArray(response.data.result)) {
             setBlockNumbers([]);
             props.onSearch([]);
+            setNoDataOpen(true);
             return;
         }
 
@@ -70,6 +86,21 @@ function AppSearch(props) {
 
         props.onEnd(response.data.result.length < 100);
     }
+
+    // Alert handlers
+    const handleNoDataClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setNoDataOpen(false);
+    };
+
+    const handleMissingClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setMissOpen(false);
+    };
 
     // Input handlers
     const onSearchAddressChange = (e) => setAddress(e.target.value);
@@ -158,9 +189,20 @@ function AppSearch(props) {
                         variant="contained" 
                         color="primary"
                         onClick={handleSearch}
+                        disabled={buttonDisabled}
                     >
                         Search
                     </Button>
+                    <Snackbar open={noDataOpen} autoHideDuration={6000} onClose={handleNoDataClose}>
+                        <Alert onClose={handleNoDataClose} severity="warning">
+                            No data found!
+                        </Alert>
+                    </Snackbar>
+                    <Snackbar open={missOpen} autoHideDuration={6000} onClose={handleMissingClose}>
+                        <Alert onClose={handleMissingClose} severity="error">
+                            Address and starting block are required!
+                        </Alert>
+                    </Snackbar>
                 </Toolbar>
             </AppBar>
         </Fragment>
